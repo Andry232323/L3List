@@ -263,7 +263,7 @@ public class MySet extends List<SubSet> {
 		}
 	}
 
-	/**
+	/*
 	 * This devient l'intersection de this et set2.
 	 * 
 	 * @param set2 deuxième ensemble
@@ -285,11 +285,28 @@ public class MySet extends List<SubSet> {
 	 * 
 	 * @param set2 deuxième ensemble
 	 */
-	public void union(MySet set2) {
+	public void union(MySet set2) { // TODO
 		System.out.println("l'ensemble numero n1 = ");
 		this.print(System.out);
 		System.out.println("l'ensemble numero n2 = ");
 		set2.print(System.out);
+
+		Iterator<SubSet> itThis = this.iterator();
+		Iterator<SubSet> itSet2 = set2.iterator();
+
+		while (!itThis.isOnFlag()) {
+			int rThis = itThis.getValue().rank;
+			int rSet2 = itSet2.getValue().rank;
+			if (rThis == rSet2) {
+				itThis.getValue().set.union(itSet2.getValue().set);
+				itThis.goForward();
+				itSet2.goForward();
+			} else if (rThis > rSet2) {
+				itThis.addLeft(itSet2.getValue());
+			} else {
+				itThis.addRight(itSet2.getValue());
+			}
+		}
 
 		System.out.println("apres union, l'ensemble numero n1 = ");
 		this.printNewState();
