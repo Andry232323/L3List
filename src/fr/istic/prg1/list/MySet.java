@@ -239,7 +239,7 @@ public class MySet extends List<SubSet> {
 		itThis.restart();
 
 		while (!itThis.isOnFlag()) {
-			if (itThis.getValue().set.size() == 0) {
+			if (itThis.getValue().set.isEmpty()) {
 				itThis.remove();	
 			}	
 			itThis.goForward();
