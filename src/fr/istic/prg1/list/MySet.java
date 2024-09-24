@@ -241,8 +241,9 @@ public class MySet extends List<SubSet> {
 		while (!itThis.isOnFlag()) {
 			if (itThis.getValue().set.isEmpty()) {
 				itThis.remove();	
-			}	
-			itThis.goForward();
+			} else {
+				itThis.goForward();
+			}
 		}
 	}
 
