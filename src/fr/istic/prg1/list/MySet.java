@@ -257,9 +257,29 @@ public class MySet extends List<SubSet> {
 		Iterator<SubSet> itSet2 = set2.iterator();
 
 		while (!itThis.isOnFlag()) {
-			itThis.getValue().set.symmetricDifference(itSet2.getValue().set);
-			itThis.goForward();
-			itSet2.goForward();
+			int rThis = itThis.getValue().rank;
+			int rSet2 = itSet2.getValue().rank;
+
+			if (rThis == rSet2) {
+				itThis.getValue().set.symmetricDifference(itSet2.getValue().set);
+				itThis.goForward();
+				itSet2.goForward();
+			} else if (rThis > rSet2) {
+				itThis.addLeft(itSet2.getValue().copyOf());
+				itThis.goForward();
+				itSet2.goForward();
+			} else {
+				itThis.goForward();
+			}
+
+		}
+
+		itThis.restart();
+
+		while (!itThis.isOnFlag()) {
+			if (itThis.getValue().set.isEmpty()) {
+				itThis.remove();
+			}
 		}
 	}
 
@@ -277,7 +297,6 @@ public class MySet extends List<SubSet> {
 			itThis.goForward();
 			itSet2.goForward();
 		}
-
 	}
 
 	/**
@@ -285,7 +304,7 @@ public class MySet extends List<SubSet> {
 	 * 
 	 * @param set2 deuxième ensemble
 	 */
-	public void union(MySet set2) { // TODO
+	public void union(MySet set2) {
 		System.out.println("l'ensemble numero n1 = ");
 		this.print(System.out);
 		System.out.println("l'ensemble numero n2 = ");
@@ -297,15 +316,23 @@ public class MySet extends List<SubSet> {
 		while (!itThis.isOnFlag()) {
 			int rThis = itThis.getValue().rank;
 			int rSet2 = itSet2.getValue().rank;
+
 			if (rThis == rSet2) {
 				itThis.getValue().set.union(itSet2.getValue().set);
 				itThis.goForward();
 				itSet2.goForward();
-			} else if (rThis > rSet2) {
-				itThis.addLeft(itSet2.getValue());
+			} else if (rThis < rSet2) {
+				itThis.goForward();
 			} else {
-				itThis.addRight(itSet2.getValue());
+				itThis.addLeft(new SubSet(rSet2, itSet2.getValue().set.copyOf()));
+				itThis.goForward();
+				itSet2.goForward();
 			}
+		}
+
+		while (!itSet2.isOnFlag()) {
+			itThis.addLeft(itSet2.getValue());
+			itSet2.goForward();
 		}
 
 		System.out.println("apres union, l'ensemble numero n1 = ");
