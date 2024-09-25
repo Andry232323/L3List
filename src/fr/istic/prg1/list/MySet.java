@@ -274,12 +274,18 @@ public class MySet extends List<SubSet> {
 
 		}
 
+		while (!itSet2.isOnFlag()) {
+			itThis.addLeft(itSet2.getValue().copyOf());	
+			itSet2.goForward();
+		}
+
 		itThis.restart();
 
 		while (!itThis.isOnFlag()) {
-			if (itThis.getValue().set.isEmpty()) {
+			if (itThis.getValue().set.size() == 0) {
 				itThis.remove();
 			}
+			itThis.goForward();
 		}
 	}
 
@@ -293,9 +299,18 @@ public class MySet extends List<SubSet> {
 		Iterator<SubSet> itSet2 = set2.iterator();
 
 		while (!itThis.isOnFlag()) {
-			itThis.getValue().set.intersection(itSet2.getValue().set);
-			itThis.goForward();
-			itSet2.goForward();
+			int rThis = itThis.getValue().rank;
+			int rSet2 = itThis.getValue().rank;
+
+			if (rThis == rSet2) {
+				itThis.getValue().set.intersection(itSet2.getValue().set);	
+				itThis.goForward();
+				itSet2.goForward();
+			} else if (rThis < rSet2) {
+				itThis.remove();
+			} else {
+				itSet2.goForward();
+			}
 		}
 	}
 
