@@ -112,15 +112,16 @@ public void add() {
  * @param is flux d'entrée.
  */
 public void add(InputStream is) {
-	Scanner s = new Scanner(is);
-	while (s.hasNextInt()) {
-		int v = s.nextInt();
-		if (!(v >= 0 && v <= 32767)) {
-			return;
+	try (Scanner s = new Scanner(is)) {
+		while (s.hasNextInt()) {
+			int v = s.nextInt();
+			if (!(v >= 0 && v <= 32767)) {
+				return;
+			}
+			addNumber(v);
 		}
-		addNumber(v);
+		s.close();
 	}
-	s.close();
 }
 
 /**
@@ -164,15 +165,16 @@ public void remove() {
  * @param is flux d'entrée
  */
 public void remove(InputStream is) {
-	Scanner s = new Scanner(is);
-	while (s.hasNextInt()) {
-		int v = s.nextInt();
-		if (!(v >= 0 && v <= 32767)) {
-			return;
+	try (Scanner s = new Scanner(is)) {
+		while (s.hasNextInt()) {
+			int v = s.nextInt();
+			if (!(v >= 0 && v <= 32767)) {
+				return;
+			}
+			removeNumber(v);
 		}
-		removeNumber(v);
+		s.close();
 	}
-	s.close();
 }
 
 /**
@@ -227,7 +229,11 @@ public void difference(MySet set2) {
 		int rSet2 = itSet2.getValue().rank;
 		if (rThis == rSet2) {
 			itThis.getValue().set.difference(itSet2.getValue().set);
-			itThis.goForward();
+			if (itThis.getValue().set.isEmpty()) {
+				itThis.remove();
+			} else {
+				itThis.goForward();
+			}
 			itSet2.goForward();
 		} else if (rThis > rSet2) {
 			itSet2.goForward();
@@ -236,15 +242,6 @@ public void difference(MySet set2) {
 		}
 	}
 
-	itThis.restart();
-
-	while (!itThis.isOnFlag()) {
-		if (itThis.getValue().set.isEmpty()) {
-			itThis.remove();
-		} else {
-			itThis.goForward();
-		}
-	}
 }
 
 /**
@@ -262,7 +259,11 @@ public void symmetricDifference(MySet set2) {
 
 		if (rThis == rSet2) {
 			itThis.getValue().set.symmetricDifference(itSet2.getValue().set);
-			itThis.goForward();
+			if (itThis.getValue().set.isEmpty()) {
+				itThis.remove();
+			} else {
+				itThis.goForward();
+			}
 			itSet2.goForward();
 		} else if (rThis > rSet2) {
 			itThis.addLeft(itSet2.getValue().copyOf());
@@ -279,15 +280,6 @@ public void symmetricDifference(MySet set2) {
 		itSet2.goForward();
 	}
 
-	itThis.restart();
-
-	while (!itThis.isOnFlag()) {
-		if (itThis.getValue().set.size() == 0) {
-			itThis.remove();
-		} else {
-			itThis.goForward();
-		}
-	}
 }
 
 /*
@@ -305,22 +297,16 @@ public void intersection(MySet set2) {
 
 		if (rThis == rSet2) {
 			itThis.getValue().set.intersection(itSet2.getValue().set);
-			itThis.goForward();
+			if (itThis.getValue().set.isEmpty()) {
+				itThis.remove();
+			} else {
+				itThis.goForward();
+			}
 			itSet2.goForward();
 		} else if (rThis < rSet2) {
 			itThis.remove();
 		} else {
 			itSet2.goForward();
-		}
-	}
-
-	itThis.restart();
-
-	while (!itThis.isOnFlag()) {
-		if (itThis.getValue().set.size() == 0) {
-			itThis.remove();
-		} else {
-			itThis.goForward();
 		}
 	}
 }
@@ -412,8 +398,24 @@ public boolean equals(Object o) {
 	 * @return true si this est inclus dans set2, false sinon
 	 */
 	public boolean isIncludedIn(MySet set2) {
-		
-		return false;
+		Iterator<SubSet> itThis = this.iterator();
+		Iterator<SubSet> itSet2 = set2.iterator();
+		boolean isIncluded = true;
+		while (!itThis.isOnFlag() && isIncluded) {
+			int rThis = itThis.getValue().rank;
+			int rSet2 = itSet2.getValue().rank;
+
+			if (rThis == rSet2) {
+				isIncluded = itThis.getValue().set.isIncludedIn(itSet2.getValue().set);
+				itThis.goForward();
+				itSet2.goForward();
+			} else if (rThis < rSet2) {
+				isIncluded = false;
+			} else {
+				itSet2.goForward();
+			}
+		}
+		return isIncluded;
 	}
 
 	// /////////////////////////////////////////////////////////////////////////////
