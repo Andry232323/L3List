@@ -95,299 +95,315 @@ public class MySet extends List<SubSet> {
 		return it.getValue().rank == r && it.getValue().set.contains(m);
 	}
 
-	/**
-	 * Ajouter à this toutes les valeurs saisis par l'utilisateur et afficher le
-	 * nouveau contenu.
-	 */
-	public void add() {
-		System.out.println(" valeurs a ajouter (-1 pour finir) : ");
-		this.add(System.in);
-		System.out.println(NEW_VALUE);
-		this.printNewState();
+/**
+ * Ajouter à this toutes les valeurs saisis par l'utilisateur et afficher le
+ * nouveau contenu.
+ */
+public void add() {
+	System.out.println(" valeurs a ajouter (-1 pour finir) : ");
+	this.add(System.in);
+	System.out.println(NEW_VALUE);
+	this.printNewState();
+}
+
+/**
+ * Ajouter à this toutes les valeurs prises dans is.
+ * 
+ * @param is flux d'entrée.
+ */
+public void add(InputStream is) {
+	Scanner s = new Scanner(is);
+	while (s.hasNextInt()) {
+		int v = s.nextInt();
+		if (!(v >= 0 && v <= 32767)) {
+			return;
+		}
+		addNumber(v);
+	}
+	s.close();
+}
+
+/**
+ * Ajouter element à this,
+ *
+ * @param element valuer à ajouter.
+ */
+public void addNumber(int value) {
+	int m = value % 256;
+	int r = value / 256;
+
+	Iterator<SubSet> it = this.iterator();
+
+	while (it.getValue().rank < r) {
+		it.goForward();
 	}
 
-	/**
-	 * Ajouter à this toutes les valeurs prises dans is.
-	 * 
-	 * @param is flux d'entrée.
-	 */
-	public void add(InputStream is) {
-		Scanner s = new Scanner(is);
-		while (s.hasNextInt()) {
-			int v = s.nextInt();
-			if (!(v >= 0 && v <= 32767)) {
-				return;
-			}
-			addNumber(v);
-		}
-		s.close();
+	if (it.getValue().rank == r) {
+		it.getValue().set.add(m);
+	} else {
+		SubSet subSet = new SubSet(r, new SmallSet());
+		subSet.set.add(m);
+		it.addLeft(subSet);
 	}
+}
 
-	/**
-	 * Ajouter element à this,
-	 *
-	 * @param element valuer à ajouter.
-	 */
-	public void addNumber(int value) {
-		int m = value % 256;
-		int r = value / 256;
+/**
+ * Supprimer de this toutes les valeurs saisies par l'utilisateur et afficher le
+ * nouveau contenu.
+ */
+public void remove() {
+	System.out.println("  valeurs a supprimer (-1 pour finir) : ");
+	this.remove(System.in);
+	System.out.println(NEW_VALUE);
+	this.printNewState();
+}
 
-		Iterator<SubSet> it = this.iterator();
-
-		while (it.getValue().rank < r) {
-			it.goForward();
+/**
+ * Supprimer de this toutes les valeurs prises dans is.
+ * 
+ * @param is flux d'entrée
+ */
+public void remove(InputStream is) {
+	Scanner s = new Scanner(is);
+	while (s.hasNextInt()) {
+		int v = s.nextInt();
+		if (!(v >= 0 && v <= 32767)) {
+			return;
 		}
+		removeNumber(v);
+	}
+	s.close();
+}
 
+/**
+ * Supprimer element de this.
+ * 
+ * @param element valeur à supprimer
+ */
+public void removeNumber(int value) {
+	Iterator<SubSet> it = this.iterator();
+	int m = value % 256;
+	int r = value / 256;
+	while (!it.isOnFlag()) {
 		if (it.getValue().rank == r) {
-			it.getValue().set.add(m);
+			it.getValue().set.remove(m);
+			if (it.getValue().set.size() == 0) {
+				it.remove();
+			}
+		}
+		it.goForward();
+	}
+
+}
+
+/**
+ * @return taille de l'ensemble this
+ */
+public int size() {
+	int counter = 0;
+	Iterator<SubSet> it = this.iterator();
+	while (!it.isOnFlag()) {
+		counter += it.getValue().set.size();
+		it.goForward();
+	}
+	return counter;
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+// /////// Difference, DifferenceSymetrique, Intersection, Union ///////
+// /////////////////////////////////////////////////////////////////////////////
+
+/**
+ * This devient la différence de this et set2.
+ * 
+ * @param set2 deuxième ensemble
+ */
+public void difference(MySet set2) {
+	Iterator<SubSet> itThis = this.iterator();
+	Iterator<SubSet> itSet2 = set2.iterator();
+
+	while (!itThis.isOnFlag()) {
+		int rThis = itThis.getValue().rank;
+		int rSet2 = itSet2.getValue().rank;
+		if (rThis == rSet2) {
+			itThis.getValue().set.difference(itSet2.getValue().set);
+			itThis.goForward();
+			itSet2.goForward();
+		} else if (rThis > rSet2) {
+			itSet2.goForward();
 		} else {
-			SubSet subSet = new SubSet(r, new SmallSet());
-			subSet.set.add(m);
-			it.addLeft(subSet);
+			itThis.goForward();
 		}
 	}
 
-	/**
-	 * Supprimer de this toutes les valeurs saisies par l'utilisateur et afficher le
-	 * nouveau contenu.
-	 */
-	public void remove() {
-		System.out.println("  valeurs a supprimer (-1 pour finir) : ");
-		this.remove(System.in);
-		System.out.println(NEW_VALUE);
-		this.printNewState();
-	}
+	itThis.restart();
 
-	/**
-	 * Supprimer de this toutes les valeurs prises dans is.
-	 * 
-	 * @param is flux d'entrée
-	 */
-	public void remove(InputStream is) {
-		Scanner s = new Scanner(is);
-		while (s.hasNextInt()) {
-			int v = s.nextInt();
-			if (!(v >= 0 && v <= 32767)) {
-				return;
-			}
-			removeNumber(v);
+	while (!itThis.isOnFlag()) {
+		if (itThis.getValue().set.isEmpty()) {
+			itThis.remove();
+		} else {
+			itThis.goForward();
 		}
-		s.close();
 	}
+}
 
-	/**
-	 * Supprimer element de this.
-	 * 
-	 * @param element valeur à supprimer
-	 */
-	public void removeNumber(int value) {
-		Iterator<SubSet> it = this.iterator();
-		int m = value % 256;
-		int r = value / 256;
-		while (!it.isOnFlag()) {
-			if (it.getValue().rank == r) {
-				it.getValue().set.remove(m);
-				if (it.getValue().set.size() == 0) {
-					it.remove();
-				}
-			}
-			it.goForward();
+/**
+ * This devient la différence symétrique de this et set2.
+ * 
+ * @param set2 deuxième ensemble
+ */
+public void symmetricDifference(MySet set2) {
+	Iterator<SubSet> itThis = this.iterator();
+	Iterator<SubSet> itSet2 = set2.iterator();
+
+	while (!itThis.isOnFlag()) {
+		int rThis = itThis.getValue().rank;
+		int rSet2 = itSet2.getValue().rank;
+
+		if (rThis == rSet2) {
+			itThis.getValue().set.symmetricDifference(itSet2.getValue().set);
+			itThis.goForward();
+			itSet2.goForward();
+		} else if (rThis > rSet2) {
+			itThis.addLeft(itSet2.getValue().copyOf());
+			itThis.goForward();
+			itSet2.goForward();
+		} else {
+			itThis.goForward();
 		}
 
 	}
 
-	/**
-	 * @return taille de l'ensemble this
-	 */
-	public int size() {
-		int counter = 0;
-		Iterator<SubSet> it = this.iterator();
-		while (!it.isOnFlag()) {
-			counter += it.getValue().set.size();
-			it.goForward();
-		}
-		return counter;
+	while (!itSet2.isOnFlag()) {
+		itThis.addLeft(itSet2.getValue().copyOf());
+		itSet2.goForward();
 	}
 
-	// /////////////////////////////////////////////////////////////////////////////
-	// /////// Difference, DifferenceSymetrique, Intersection, Union ///////
-	// /////////////////////////////////////////////////////////////////////////////
+	itThis.restart();
 
-	/**
-	 * This devient la différence de this et set2.
-	 * 
-	 * @param set2 deuxième ensemble
-	 */
-	public void difference(MySet set2) {
-		Iterator<SubSet> itThis = this.iterator();
-		Iterator<SubSet> itSet2 = set2.iterator();
-
-		while (!itThis.isOnFlag()) {
-			int rThis = itThis.getValue().rank;
-			int rSet2 = itSet2.getValue().rank;
-			if (rThis == rSet2) {
-				itThis.getValue().set.difference(itSet2.getValue().set);
-				itThis.goForward();
-				itSet2.goForward();
-			} else if (rThis > rSet2) {
-				itSet2.goForward();
-			} else {
-				itThis.goForward();
-			}
-		}
-
-		itThis.restart();
-
-		while (!itThis.isOnFlag()) {
-			if (itThis.getValue().set.isEmpty()) {
-				itThis.remove();	
-			} else {
-				itThis.goForward();
-			}
+	while (!itThis.isOnFlag()) {
+		if (itThis.getValue().set.size() == 0) {
+			itThis.remove();
+		} else {
+			itThis.goForward();
 		}
 	}
+}
 
-	/**
-	 * This devient la différence symétrique de this et set2.
-	 * 
-	 * @param set2 deuxième ensemble
-	 */
-	public void symmetricDifference(MySet set2) {
-		Iterator<SubSet> itThis = this.iterator();
-		Iterator<SubSet> itSet2 = set2.iterator();
+/*
+ * This devient l'intersection de this et set2.
+ * 
+ * @param set2 deuxième ensemble
+ */
+public void intersection(MySet set2) {
+	Iterator<SubSet> itThis = this.iterator();
+	Iterator<SubSet> itSet2 = set2.iterator();
 
-		while (!itThis.isOnFlag()) {
-			int rThis = itThis.getValue().rank;
-			int rSet2 = itSet2.getValue().rank;
+	while (!itThis.isOnFlag()) {
+		int rThis = itThis.getValue().rank;
+		int rSet2 = itSet2.getValue().rank;
 
-			if (rThis == rSet2) {
-				itThis.getValue().set.symmetricDifference(itSet2.getValue().set);
-				itThis.goForward();
-				itSet2.goForward();
-			} else if (rThis > rSet2) {
-				itThis.addLeft(itSet2.getValue().copyOf());
-				itThis.goForward();
-				itSet2.goForward();
-			} else {
-				itThis.goForward();
-			}
-
-		}
-
-		while (!itSet2.isOnFlag()) {
-			itThis.addLeft(itSet2.getValue().copyOf());	
+		if (rThis == rSet2) {
+			itThis.getValue().set.intersection(itSet2.getValue().set);
+			itThis.goForward();
+			itSet2.goForward();
+		} else if (rThis < rSet2) {
+			itThis.remove();
+		} else {
 			itSet2.goForward();
 		}
-
-		itThis.restart();
-
-		while (!itThis.isOnFlag()) {
-			if (itThis.getValue().set.size() == 0) {
-				itThis.remove();
-			} else {
-				itThis.goForward();
-			}
-		}
 	}
 
-	/*
-	 * This devient l'intersection de this et set2.
-	 * 
-	 * @param set2 deuxième ensemble
-	 */
-	public void intersection(MySet set2) {
-		Iterator<SubSet> itThis = this.iterator();
-		Iterator<SubSet> itSet2 = set2.iterator();
+	itThis.restart();
 
-		while (!itThis.isOnFlag()) {
-			int rThis = itThis.getValue().rank;
-			int rSet2 = itSet2.getValue().rank;
-
-			if (rThis == rSet2) {
-				itThis.getValue().set.intersection(itSet2.getValue().set);
-				itThis.goForward();
-				itSet2.goForward();
-			} else if (rThis < rSet2) {
-				itThis.remove();
-			} else {
-				itSet2.goForward();
-			}
-		}
-		
-		itThis.restart();
-
-		while (!itThis.isOnFlag()) {
-			if (itThis.getValue().set.size() == 0) {
-				itThis.remove();
-			} else {
-				itThis.goForward();
-			}
+	while (!itThis.isOnFlag()) {
+		if (itThis.getValue().set.size() == 0) {
+			itThis.remove();
+		} else {
+			itThis.goForward();
 		}
 	}
+}
 
-	/**
-	 * This devient l'union de this et set2.
-	 * 
-	 * @param set2 deuxième ensemble
-	 */
-	public void union(MySet set2) {
-		System.out.println("l'ensemble numero n1 = ");
-		this.print(System.out);
-		System.out.println("l'ensemble numero n2 = ");
-		set2.print(System.out);
+/**
+ * This devient l'union de this et set2.
+ * 
+ * @param set2 deuxième ensemble
+ */
+public void union(MySet set2) {
+	System.out.println("l'ensemble numero n1 = ");
+	this.print(System.out);
+	System.out.println("l'ensemble numero n2 = ");
+	set2.print(System.out);
 
-		Iterator<SubSet> itThis = this.iterator();
-		Iterator<SubSet> itSet2 = set2.iterator();
+	Iterator<SubSet> itThis = this.iterator();
+	Iterator<SubSet> itSet2 = set2.iterator();
 
-		while (!itThis.isOnFlag()) {
-			int rThis = itThis.getValue().rank;
-			int rSet2 = itSet2.getValue().rank;
+	while (!itThis.isOnFlag()) {
+		int rThis = itThis.getValue().rank;
+		int rSet2 = itSet2.getValue().rank;
 
-			if (rThis == rSet2) {
-				itThis.getValue().set.union(itSet2.getValue().set);
-				itThis.goForward();
-				itSet2.goForward();
-			} else if (rThis < rSet2) {
-				itThis.goForward();
-			} else {
-				itThis.addLeft(new SubSet(rSet2, itSet2.getValue().set.copyOf()));
-				itThis.goForward();
-				itSet2.goForward();
-			}
-		}
-
-		while (!itSet2.isOnFlag()) {
-			itThis.addLeft(itSet2.getValue());
+		if (rThis == rSet2) {
+			itThis.getValue().set.union(itSet2.getValue().set);
+			itThis.goForward();
+			itSet2.goForward();
+		} else if (rThis < rSet2) {
+			itThis.goForward();
+		} else {
+			itThis.addLeft(new SubSet(rSet2, itSet2.getValue().set.copyOf()));
+			itThis.goForward();
 			itSet2.goForward();
 		}
-
-		System.out.println("apres union, l'ensemble numero n1 = ");
-		this.printNewState();
 	}
 
-	// /////////////////////////////////////////////////////////////////////////////
-	// /////////////////// Egalite, Inclusion ////////////////////
-	// /////////////////////////////////////////////////////////////////////////////
+	while (!itSet2.isOnFlag()) {
+		itThis.addLeft(itSet2.getValue());
+		itSet2.goForward();
+	}
 
-	/**
-	 * @param o deuxième ensemble
-	 * 
-	 * @return true si les ensembles this et o sont égaux, false sinon
-	 */
-	@Override
-	public boolean equals(Object o) {
-		boolean b = true;
-		if (this == o) {
-			b = true;
-		} else if (!(o instanceof MySet)) {
+	System.out.println("apres union, l'ensemble numero n1 = ");
+	this.printNewState();
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+// /////////////////// Egalite, Inclusion ////////////////////
+// /////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @param o deuxième ensemble
+ * 
+ * @return true si les ensembles this et o sont égaux, false sinon
+ */
+@Override
+public boolean equals(Object o) {
+	boolean b = true;
+	if (this == o) {
+		b = true;
+	} else if (!(o instanceof MySet)) {
+		b = false;
+	} else {
+		MySet mySet = (MySet) o;
+		Iterator<SubSet> itThis = this.iterator();
+		Iterator<SubSet> itMySet = mySet.iterator();
+
+		if (this.size() != mySet.size()) {
 			b = false;
 		} else {
-			System.out.println("------------------------------------------");
-			System.out.println("------------------------------------------");
-			System.out.println("---------- fonction à écrire -------------");
-			System.out.println("------------------------------------------");
-			System.out.println("------------------------------------------");
+			boolean equalrank = true;
+			boolean equalSmallSet = true;
+			while (!itThis.isOnFlag() && equalSmallSet && equalrank) {
+				if (itThis.getValue().rank != itMySet.getValue().rank) {
+					equalrank = false;
+				} else {
+					equalSmallSet = itThis.getValue().set.equals(itMySet.getValue().set);
+				}
+				itThis.goForward();
+				itMySet.goForward();
+			}
+			b = equalSmallSet && equalrank;
 		}
+
+	}
 		return b;
 	}
 
@@ -396,11 +412,7 @@ public class MySet extends List<SubSet> {
 	 * @return true si this est inclus dans set2, false sinon
 	 */
 	public boolean isIncludedIn(MySet set2) {
-		System.out.println("------------------------------------------");
-		System.out.println("------------------------------------------");
-		System.out.println("---------- fonction à écrire -------------");
-		System.out.println("------------------------------------------");
-		System.out.println("------------------------------------------");
+		
 		return false;
 	}
 
