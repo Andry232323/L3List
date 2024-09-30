@@ -259,6 +259,10 @@ public void symmetricDifference(MySet set2) {
 	Iterator<SubSet> itSet2 = set2.iterator();
 
 	while (!itThis.isOnFlag()) {
+		if (this == set2) {
+			this.clear();
+			return;
+		}
 		int rThis = itThis.getValue().rank;
 		int rSet2 = itSet2.getValue().rank;
 
