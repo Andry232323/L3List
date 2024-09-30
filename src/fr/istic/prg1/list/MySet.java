@@ -221,6 +221,11 @@ public int size() {
  * @param set2 deuxième ensemble
  */
 public void difference(MySet set2) {
+	if (this == set2) {
+		this.clear();
+		return;
+	}
+
 	Iterator<SubSet> itThis = this.iterator();
 	Iterator<SubSet> itSet2 = set2.iterator();
 
