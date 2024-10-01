@@ -1,9 +1,12 @@
 package fr.istic.prg1.list;
 
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 
 import fr.istic.prg1.list_util.Iterator;
 import fr.istic.prg1.list_util.SuperT;
+import fr.istic.prg1.list_util.List.ListIterator;
 
 public class List<T extends SuperT> {
 	// liste en double chainage par references
@@ -31,7 +34,8 @@ public class List<T extends SuperT> {
 		private Element current;
 
 		private ListIterator() {
-			current = flag.right;
+			current = flag;
+			goForward();
 		}
 
 		@Override
@@ -116,28 +120,44 @@ public class List<T extends SuperT> {
 	private ArrayList<ListIterator> itList = new ArrayList<>();
 
 	public List() {
-		flag = new Element(null, flag, flag);
+		flag = new Element();
+		flag.right = flag;
+		flag.left = flag;
 	}
 
 	public ListIterator iterator() {
-		//TODO 
-		return null;
+		ListIterator it = new ListIterator();
+		itList.add(it);
+		return it;
 	}
 
 	public boolean isEmpty() {
-		return false;
+		return flag.left == flag && flag.right == flag;
 	}
 
 	public void clear() {
+		flag.right = flag;
+		flag.left = flag;
 	}
 
 	public void setFlag(T v) {
+		flag.value = (T) v.copyOf();
 	}
 
 	public void addHead(T v) {
+		Element e = new Element(v, null, null);
+		Element oldHead = flag.right;
+		flag.right = e;
+		e.right = oldHead;
+		e.left = flag;
 	}
 
 	public void addTail(T v) {
+		Element e = new Element(v, null, null);
+		Element oldTail = flag.left;
+		flag.left = e;
+		e.left = oldTail;
+		e.right = flag;
 	}
 
 	@SuppressWarnings("unchecked")

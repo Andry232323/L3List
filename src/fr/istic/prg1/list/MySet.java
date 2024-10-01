@@ -10,7 +10,8 @@ import java.util.Scanner;
 
 import fr.istic.prg1.list_util.Comparison;
 import fr.istic.prg1.list_util.Iterator;
-import fr.istic.prg1.list_util.List;
+// import fr.istic.prg1.list_util.List;
+import fr.istic.prg1.list.List;
 import fr.istic.prg1.list_util.SmallSet;
 
 /**
